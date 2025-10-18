@@ -11,6 +11,8 @@
 #define LinkedList_H
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
+
 using namespace std;
 template <class T>
 class LinkedList

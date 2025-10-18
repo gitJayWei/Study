@@ -11,6 +11,8 @@
 #ifndef FLinkedList_H
 #define FLinkedList_H
 #include <iostream>
+#include <stdexcept>
+
 using namespace std;
 template <class T>
 class FLinkedList
