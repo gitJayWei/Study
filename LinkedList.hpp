@@ -1,42 +1,123 @@
-/*******************************************************************************
- * FileName:         LinkedList.hpp
- * Author:           冯桥
- * Student Number:   3017216006
- * Date:             2021/03/23 23:03:22
- * Version:          v1.0
- * Description:      Data Structure Experiment #2.2
- *                   请补全LinkedList类。请实现为双向循环链表
- *******************************************************************************/
-#ifndef LinkedList_H
-#define LinkedList_H
-#include <algorithm>
-#include <iostream>
-#include <stdexcept>
+/*
+ * FileName:       LinkedList.hpp
+ * Author:         Jay Wei<jaywei0610@gmail.com>
+ * Date:           2025/10/20
+ * Discription:    双向循环链表
+ */
 
-using namespace std;
+#pragma once
+
+namespace my_stl
+{
+    template <class T>
+    class Node;
+
+    // <--------------LinkedList类定义----------------->
+    template <class T>
+    class LinkedList
+    {
+    public:
+        LinkedList();
+        ~LinkedList();
+        [[nodiscard]] bool isEmpty() const { return len == 0; }
+        [[nodiscard]] int Length() const { return len; }
+        bool Find(int i, T &x) const;
+        T &operator[](int i);
+        int Search(const T &x) const;
+        bool Insert(int i, const T &x);
+        void Push_Back(const T &x) { Insert(len, x); }
+        bool Delete(int i);
+        void Reverse();
+        void ClearList();
+
+    private:
+        Node<T> *head;
+        int len;
+    };
+
+    // <--------------Node类定义----------------->
+    template <class T>
+    class Node
+    {
+        friend class LinkedList<T>;
+
+    public:
+        Node() = default;
+        // explicit
+        explicit Node(cosnt T &_value, Node *_pre = nullptr, Node *_next = nullptr) : value(_value), pre(_pre), next(_next) {}
+
+    private:
+        T data;
+        Node<T> *pre;
+        Node<T> *next;
+    };
+
+    // <--------------LinkedList构造函数----------------->
+    template <class T>
+    LinkedList<T>::LinkedList()
+    {
+        len = 0;
+        head = new Node();
+
+        // 做成双向循环链表
+        head->pre = head;
+        head->next = head;
+    }
+
+    // <--------------LinkedList析构函数----------------->
+    template <class T>
+    LinkedList<T>::~LinkedList()
+    {
+    }
+
+    // <-----------------Find成员函数-------------------->
+    template <class T>
+    bool LinkedList<T>::Find(int i, T &x) const
+    {
+    }
+
+    // <------------------operator[]---------------------->
+    template <class T>
+    T &LinkedList<T>::operator[](int i)
+    {
+    }
+
+    // <------------------Search成员函数--------------------->
+    template <class T>
+    int LinkedList<T>::Search(const T &x) const
+    {
+    }
+
+    // <------------------Insert成员函数--------------------->
+    template <class T>
+    bool LinkedList<T>::Insert(int i, const T &x)
+    {
+    }
+
+    // <------------------Delete成员函数--------------------->
+    template <class T>
+    bool LinkedList<T>::Delete(int i)
+    {
+    }
+
+    // <------------------Reverse成员函数--------------------->
+    template <class T>
+    void LinkedList<T>::Reverse()
+    {
+    }
+
+    // <-----------------ClearList成员函数--------------------->
+    template <class T>
+    void LinkedList<T>::ClearList()
+    {
+    }
+} // namespace my_stl
+
+// 下面是原先内容
 template <class T>
 class LinkedList
 {
-public:
-    struct Node
-    {
-        T value;
-        Node *pre;
-        Node *next;
-        Node() {}
-        Node(T _value, Node *_pre, Node *_next) : value(_value), pre(_pre), next(_next) {}
-    };
 
-    // 头结点
-    Node *head;
-
-    // 链表长度
-    int len;
-
-    /**
-        构造函数，构建一个 LinkedList。
-        @name LinkedList();
-    */
     LinkedList()
     {
         // 做成双向循环链表
@@ -63,23 +144,6 @@ public:
             now = tmp;
         }
     }
-
-    /**
-        询问LinkedList现有元素的个数
-        @name length();
-        @return int 当前LinkedList包含元素的个数
-    */
-    int length()
-    {
-        return len;
-    }
-
-    /**
-        获取location位置的元素（从0开始标号)
-        @name at(int);
-        @param  location 需要查询元素的位置
-        @return int LinkedList在location位置的元素
-    */
     T at(int location)
     {
         if (location < 0 || location >= len)

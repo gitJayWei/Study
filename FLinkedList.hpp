@@ -2,6 +2,7 @@
  * FileName:         FLinkedList.hpp
  * Author:           Jay Wei<jaywei0610@gmail.com>
  * Date:             2025/10/19
+ * 带有头结点和尾指针的单链表
  */
 
 #pragma once
