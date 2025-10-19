@@ -1,252 +1,225 @@
-/*******************************************************************************
-* FileName:         FLinkedList.hpp
-* Author:           冯桥
-* Student Number:   3017216006
-* Date:             2021/03/23 22:47:53
-* Version:          v1.0
-* Description:      Data Structure Experiment #2.1
-*                   请补全FLinkedList类。FLinkedList即单链表，指Forward Linked List。
-                    因为单链表只能正向遍历（无法快速求前驱），因此称之为Forward。
-*******************************************************************************/
-#ifndef FLinkedList_H
-#define FLinkedList_H
-#include <iostream>
-#include <stdexcept>
+/*
+ * FileName:         FLinkedList.hpp
+ * Author:           Jay Wei<jaywei0610@gmail.com>
+ * Date:             2025/10/19
+ */
 
-using namespace std;
-template <class T>
-class FLinkedList
+#pragma once
+
+namespace my_stl
 {
-public:
-    struct Node
+    template <class T>
+    class Node; // 前向声明
+
+    // <----------------FLinkedList类定义------------------>
+    template <class T>
+    class FLinkedList
     {
-        T value;
-        Node *next;
-        // 这是Node结构体的构造函数，方便你下面调用。
-        Node() {}
-        Node(T _value, Node *_next) : value(_value), next(_next) {}
+    public:
+        FLinkedList();
+        ~FLinkedList();
+        [[nodiscard]] bool isEmpty() const { return len == 0; }
+        [[nodiscard]] int Length() const { return len; }
+        bool Find(int i, T &x) const;
+        T &operator[](int i);
+        int Search(const T &x) const;
+        bool Insert(int i, const T &x);
+        void Push_Back(const T &x) { Insert(len, x); }
+        bool Delete(int i);
+        void Reverse();
+        void ClearList();
+
+    private:
+        Node<T> *head;
+        Node<T> *tail;
+        int len;
     };
 
-    // 头结点
-    /**
-        记得复习：为什么需要头结点？带头结点的好处是什么？
-    */
-    Node *head;
-
-    // 尾指针
-    /**
-        一般都是向表尾添加元素。因此这里额外维护一个尾指针。
-        PPT里有提到过尾插法和尾指针哦！后面 void append(T& data) 会用到。
-    */
-    Node *last;
-
-    // 链表长度
-    /**
-        一般会顺手维护一个链表长度，这样求元素个数就很方便。
-    */
-    int len;
-
-    /**
-        构造函数，构建一个 FLinkedList。
-        @name FLinkedList();
-        ---------------------------------------------------
-        为了防止同学们不知道该干什么，助教决定把它实现了。
-        但是记得复习：创建一个链表时需要做什么？
-    */
-    FLinkedList()
+    // <------------------Node类定义-------------------->
+    template <class T>
+    class Node
     {
-        // 创建链表要做的就是把头结点安排好
+        friend class FLinkedList<T>;
+
+    public:
+        Node() = default;
+        explicit Node(const T &_data, Node<T> *_next = nullptr) : data(_data), next(_next) {}
+
+    private:
+        T data;
+        Node<T> *next;
+    };
+
+    // <----------------FLinkedList构造函数------------------>
+    template <class T>
+    FLinkedList<T>::FLinkedList()
+    {
+        head = new Node<T>;
+        tail = head;
         len = 0;
-        head = new Node(0, NULL);
-        last = head;
     }
 
-    /**
-        析构函数
-        @name ~FLinkedList();
-        -------------------------------------------------------
-        记得把所有结点都释放哦，小心内存泄漏。
-    */
-    ~FLinkedList()
+    // <----------------FLinkedList析构函数------------------>
+    template <class T>
+    FLinkedList<T>::~FLinkedList()
     {
-        Node *tmp;
-        Node *now = head;
-        for (int i = 0; i < len; i++)
-        {
-            tmp = now->next;
-            delete now;
-            now = tmp;
-        }
+        ClearList(); // 借助ClearList删掉除头节点外的所有节点
+        delete head;
     }
 
-    /**
-        询问FLinkedList现有元素的个数
-        @name length();
-        @return int 当前FLinkedList包含元素的个数
-    */
-    int length()
+    // <----------------Find成员函数------------------>
+    template <class T>
+    bool FLinkedList<T>::Find(int i, T &x) const
     {
-        return len;
-    }
-
-    /**
-        获取location位置的元素（从0开始标号)
-        @name at(int);
-        @param  location 需要查询元素的位置
-        @return int FLinkedList在location位置的元素
-    */
-    T at(int location)
-    {
-        if (location < 0 || location >= len)
-        {
-            throw out_of_range("Invalid location");
-        }
-
-        Node *current = head->next;
-        for (int i = 0; i < location; ++i)
-        {
-            current = current->next;
-        }
-        return current->value;
-    }
-
-    /**
-        插入元素
-        @name insert(T&, int);
-        @param  data        需要插入的元素
-                location    插入元素的位置
-        @return bool    true 插入成功，false插入失败
-        ----------------------------------------------------------
-        插入失败是指location不对的情况
-    */
-    bool insert(const T &data, int location)
-    {
-        if (location < 0 || location > len)
+        if (i < 0 || i >= len)
             return false;
 
-        Node *prev = head;
-        for (int i = 0; i < location; ++i)
-            prev = prev->next;
+        Node<T> *p = head->next; // 此时p指向第0个节点
 
-        Node *newNode = new Node(data, prev->next);
-        prev->next = newNode;
+        // 每次循环开始前，p指向第j个节点
+        // j = i时循环结束，p指向第i个节点
+        for (int j = 0; j < i; j++)
+            p = p->next;
 
-        if (location == len)
-            last = newNode;
+        x = p->data;
+        return true;
+    }
+
+    // <----------------operator[]重载------------------>
+    template <class T>
+    T &FLinkedList<T>::operator[](int i)
+    {
+        if (i < 0 || i >= len)
+            throw std::out_of_range("Index out of range");
+
+        Node<T> *p = head->next; // 此时p指向第0个节点
+
+        // 每次循环开始前，p指向第j个节点
+        // j = i时循环结束，p指向第i个节点
+        for (int j = 0; j < i; j++)
+            p = p->next;
+
+        return p->data;
+    }
+
+    // <----------------Search成员函数------------------>
+    template <class T>
+    int FLinkedList<T>::Search(const T &x) const
+    {
+        Node<T> *p = head->next; // 此时p指向第0个节点
+
+        // 每次循环开始前，p指向第i个节点
+        for (int i = 0; i < len; i++)
+        {
+            if (p->data == x)
+                return i;
+            p = p->next;
+        }
+        return -1;
+    }
+
+    // <----------------Insert成员函数------------------>
+    template <class T>
+    bool FLinkedList<T>::Insert(int i, const T &x)
+    {
+        if (i < 0 || i > len) // i可以取len，插入到链表尾部
+            return false;
+
+        // 因为要找到插入位置前一个节点，所以p指向头节点而不是第0个节点
+        Node<T> *p = head;
+
+        // 每次循环开始前，p指向第j-1个节点
+        // j = i时循环结束，p指向第i-1个节点
+        for (int j = 0; j < i; j++)
+            p = p->next;
+
+        // 让newNode指向p的下一个节点，即第i个节点
+        auto newNode = new Node<T>(x, p->next);
+
+        p->next = newNode; // 让p指向newNode
+
+        if (i == len)       // 如果插入到链表尾部
+            tail = newNode; // 更新尾指针
 
         len++;
         return true;
     }
 
-    /**
-        删除位于location的元素
-        @name erase(int);
-        @param  location 需要删除元素的位置
-        @return bool    true 删除成功，false删除失败
-        ----------------------------------------------------------
-        删除失败是指location不对的情况
-    */
-    bool erase(int location)
+    // <----------------Delete成员函数------------------>
+    template <class T>
+    bool FLinkedList<T>::Delete(int i)
     {
-        if (location < 0 || location >= len)
-        {
+        if (i < 0 || i >= len)
             return false;
-        }
 
-        Node *prev = head;
-        for (int i = 0; i < location; ++i)
-        {
-            prev = prev->next;
-        }
+        // 因为要找到删除位置前一个节点，所以p指向头节点而不是第0个节点
+        Node<T> *p = head;
 
-        Node *toDelete = prev->next;
-        prev->next = toDelete->next;
+        // 每次循环开始前，p指向第j-1个节点
+        // j = i时循环结束，p指向第i-1个节点
+        for (int j = 0; j < i; j++)
+            p = p->next;
 
-        if (toDelete == last)
-        {
-            last = prev;
-        }
+        // 因为要改变第i-1个节点的next指向，先让q维护第i个节点
+        Node<T> *q = p->next;
 
-        delete toDelete;
+        p->next = q->next; // 让p指向第i+1个节点
+
+        if (i == len - 1) // 如果删除的是最后一个节点
+            tail = p;     // 更新尾指针
+
+        delete q;
         len--;
         return true;
     }
 
-    /**
-        将链表进行翻转操作。
-        @name converse();
-        ---------------------------------------------------------
-        例如， FLinkedList开始为 1 2 3 4 5，
-        则翻转后为  5 4 3 2 1
-    */
-    void converse()
+    // <----------------Reverse成员函数------------------>
+    template <class T>
+    void FLinkedList<T>::Reverse()
     {
+        // 如果链表为空或只有一个节点，则无需反转
         if (len <= 1)
             return;
+        /*
+         * 翻转的思路是将每个节点的next指针指向前一个节点
+         * 由于单链表无法访问前一个节点，所以需要一个指针prev来保存前一个节点
+         * 更改当前节点的next指针后会丢失下一个节点，所以需要next指针来保存下一个节点
+         */
 
-        Node *prev = nullptr;
-        Node *current = head->next;
-        Node *next = nullptr;
+        Node<T> *oldhead = head;
+        // 定义三个指针，分别指向当前节点、前一个节点和后一个节点
+        Node<T> *prev = nullptr;
+        Node<T> *curr = head->next;
+        Node<T> *next = nullptr;
 
-        last = current;
-
-        while (current != nullptr)
+        // 遍历链表，直到当前节点为空
+        while (curr != nullptr)
         {
-            next = current->next;
-            current->next = prev;
-            prev = current;
-            current = next;
+            next = curr->next; // 保存下一个节点
+            curr->next = prev; // 将当前节点的next指向前一个节点
+            prev = curr;       // 前一个节点后移
+            curr = next;       // 当前节点后移
         }
 
+        // 最后将头指针指向反转后的最后一个节点
         head->next = prev;
+        tail = oldhead->next; // 更新尾指针
     }
 
-    /**
-        将data插入到链表表尾。
-        @name append(T&);
-        @param data 要插入的元素。
-    */
-    void append(const T &data)
+    // <----------------ClearList成员函数------------------>
+    template <class T>
+    void FLinkedList<T>::ClearList()
     {
-        Node *newNode = new Node(data, nullptr);
-        last->next = newNode;
-        last = newNode;
-        len++;
-    }
-
-    /**
-        将append_list拼接到当前链表后，拼接后append_list将为空链表
-        @name append(FLinkedList&);
-        @param  append_list 被拼接的链表。
-    */
-    void append(FLinkedList &append_list)
-    {
-        if (append_list.len == 0)
-            return;
-
-        last->next = append_list.head->next;
-        last = append_list.last;
-        len += append_list.len;
-
-        append_list.head->next = nullptr;
-        append_list.last = append_list.head;
-        append_list.len = 0;
-    }
-
-    /**
-        将链表元素顺序输出。
-        @name print();
-        ---------------------------------------------------------
-        本函数在测试中不会被调用，仅为方便大家调试。
-    */
-    void print()
-    {
-        Node *now = head;
-        for (int i = 0; i < len; i++)
+        Node<T> *curr = head->next;
+        while (curr)
         {
-            now = now->next;
-            cout << now->value << endl;
+            // next指针不断后移，借助curr指针删除节点
+            Node<T> *next = curr->next;
+            delete curr;
+            curr = next;
         }
+        head->next = nullptr;
+        tail = head;
+        len = 0;
     }
-};
-#endif
+} // namespace my_stl
